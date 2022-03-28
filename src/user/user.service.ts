@@ -28,7 +28,7 @@ export class UserService {
     });
 
     // Create a new user entity from the user we just created for serialization
-    return new User(user);
+    return this.serialize(user);
   }
 
   /**
@@ -43,6 +43,24 @@ export class UserService {
     });
 
     // Create a new user entity from the user we just found for serialization
-    return new User(user);
+    return this.serialize(user);
+  }
+
+  /**
+   * Serialize a user entity to a JSON object.
+   * @param user - Partial<User>
+   * @returns The user entity with the password property removed.
+   */
+  serialize(user: Partial<User>) {
+    // Create a new user entity from the user we just found for serialization
+    const userEntity = new User(user);
+
+    // If the Entity is empty, return null
+    if (Object.keys(userEntity).length === 0) return null;
+
+    // Just in case, we return the user entity, but we don't want to expose the password
+    delete userEntity.password;
+
+    return userEntity;
   }
 }
