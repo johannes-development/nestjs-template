@@ -1,0 +1,62 @@
+name: Node.js Test Workflow
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:${{ secrets.SECRET_PASSWORD }}@0.0.0.0:5432/test_development
+      NODE_ENV: 'test'
+      ENVIRONMENT_TITLE: 'Test-Server'
+      SERVER_PORT: 1337
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+    container: node:latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.SECRET_PASSWORD }}
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: test_development
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          apt-get update
+          apt-get install --yes postgresql-client
+
+      - name: Query database
+        run: psql -h postgres -d postgres_db -U postgres -c 'SELECT 1;'
+        env:
+          PGPASSWORD: ${{ secrets.SECRET_PASSWORD }}
+
+      - uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: install # will run `yarn install` command
+
+      - uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: prisma:migrate:dev # will run `yarn prisma:migrate:dev` command
+
+      - uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: build # will run `yarn build` command
+
+      - uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: test # will run `yarn test` command
