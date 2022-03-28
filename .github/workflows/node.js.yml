@@ -34,8 +34,8 @@ jobs:
         with:
           cmd: install # will run `yarn install` command
 
-      - name: Build
-        run: sleep 5
+      - name: Get Info
+        run: docker ps
 
       - uses: borales/actions-yarn@v2.3.0
         with:
