@@ -12,7 +12,7 @@ export class NotFoundInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       tap(data => {
-        if (!data || Object.keys(data).length === 0)
+        if (!data)
           throw new NotFoundException(
             this.message || "The requested resource doesn't exist",
           );
