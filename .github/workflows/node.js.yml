@@ -35,7 +35,7 @@ jobs:
           cmd: install # will run `yarn install` command
 
       - name: Get Info
-        run: docker ps
+        run: docker logs docker_dev-database_1
 
       - uses: borales/actions-yarn@v2.3.0
         with:
