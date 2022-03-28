@@ -41,7 +41,7 @@ jobs:
           apt-get install --yes postgresql-client
 
       - name: Query database
-        run: psql -h postgres -d postgres_db -U postgres -c 'SELECT 1;'
+        run: psql -h localhost -d postgres_db -U postgres -c 'SELECT 1;'
         env:
           PGPASSWORD: ${{ secrets.SECRET_PASSWORD }}
 
