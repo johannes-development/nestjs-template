@@ -20,11 +20,6 @@ jobs:
       SERVER_PORT: 1337
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
-    strategy:
-      matrix:
-        node-version: [12.x, 14.x, 16.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-        
     steps:
     # need checkout before using compose-action
     - uses: actions/checkout@v2
@@ -32,14 +27,17 @@ jobs:
       with:
         compose-file: './docker/docker-compose.dev.yml'
         down-flags: '--volumes'
-        
+    
     - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+    - uses: borales/actions-yarn@v2.3.0
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm run prisma:migrate:dev
-    - run: npm test
+        cmd: install # will run `yarn install` command
+    - uses: borales/actions-yarn@v2.3.0
+      with:
+        cmd: prisma:migrate:dev # will run `yarn prisma:migrate:dev` command
+    - uses: borales/actions-yarn@v2.3.0
+      with:
+        cmd: build # will run `yarn build` command
+    - uses: borales/actions-yarn@v2.3.0
+      with:
+        cmd: test # will run `yarn test` command
