@@ -14,7 +14,7 @@ env:
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
 jobs:
-  setup-posgres:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -22,40 +22,14 @@ jobs:
         run: docker-compose -f docker/docker-compose.test.yml up -d
       - name: Wait for Postgres
         run: sleep 10
-
-  install:
-    runs-on: ubuntu-latest
-    # needs: setup-posgres
-    steps:
-      # - uses: actions/checkout@v2
-      - name: Install dependencies
-        uses: actions/setup-node@v1
+        - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
         with:
-          node-version: '16.x'
-          yarn: true
-      - name: Install dependencies
-        run: yarn install
-
-  build:
-    runs-on: ubuntu-latest
-    needs: install
-    steps:
-      # - uses: actions/checkout@v2
-      - name: Build
-        run: yarn build
-
-  migrate:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      # - uses: actions/checkout@v2
+          node-version: '16'
+          cache: 'yarn'
+          check-latest: true
+      - run: yarn install
+      - run: yarn build
       - name: Migrate
-        run: npx prisma migrate deploy
-
-  test:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      # - uses: actions/checkout@v2
-      - name: Test
-        run: yarn test
+          run: npx prisma migrate deploy
+      - run: yarn build
