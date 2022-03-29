@@ -6,57 +6,62 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  DATABASE_URL: postgresql://postgres:${{ secrets.SECRET_PASSWORD }}@0.0.0.0:5432/test_development
+  NODE_ENV: 'test'
+  ENVIRONMENT_TITLE: 'Test-Server'
+  SERVER_PORT: 1337
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
 jobs:
+  setup-posgres:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Posgres
+        run: docker-compose -f docker/docker-compose.test.yml up -d
+      - name: Wait for Postgres
+        wait:
+          for:
+            url: http://
+            port: 5432
+            status: 200
+            timeout: 600
+            name: postgres
+      - name: Setup Database
+        run: docker exec -i postgres psql -U postgres -c "CREATE DATABASE test_development;"
+
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16.x'
+          yarn: true
+        run: yarn install
+
+  build:
+    runs-on: ubuntu-latest
+    depends-on: install
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: yarn build
+
+  migrate:
+    runs-on: ubuntu-latest
+    depends-on: build
+    steps:
+      - uses: actions/checkout@v2
+      - name: Migrate
+        run: npx prisma migrate deploy
+
   test:
     runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: postgresql://postgres:${{ secrets.SECRET_PASSWORD }}@0.0.0.0:5432/test_development
-      NODE_ENV: 'test'
-      ENVIRONMENT_TITLE: 'Test-Server'
-      SERVER_PORT: 1337
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
-
-    container: node:latest
-
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ${{ secrets.SECRET_PASSWORD }}
-          POSTGRES_PORT: 5432
-          POSTGRES_DB: test_development
-        ports:
-          - 5432:5432
-        # options: >-
-        #   --health-cmd pg_isready
-        #   --health-interval 10s
-        #   --health-timeout 5s
-        #   --health-retries 5
-
+    depends-on: build
     steps:
-      - name: Install PostgreSQL client
-        run: |
-          apt-get update
-          apt-get install --yes postgresql-client
-
-      - name: Query database
-        run: psql -h localhost -d postgres_db -U postgres -c 'SELECT 1;'
-        env:
-          PGPASSWORD: ${{ secrets.SECRET_PASSWORD }}
-
-      - uses: borales/actions-yarn@v2.3.0
-        with:
-          cmd: install # will run `yarn install` command
-
-      - uses: borales/actions-yarn@v2.3.0
-        with:
-          cmd: prisma:migrate:dev # will run `yarn prisma:migrate:dev` command
-
-      - uses: borales/actions-yarn@v2.3.0
-        with:
-          cmd: build # will run `yarn build` command
-
-      - uses: borales/actions-yarn@v2.3.0
-        with:
-          cmd: test # will run `yarn test` command
+      - uses: actions/checkout@v2
+      - name: Test
+        run: yarn test
