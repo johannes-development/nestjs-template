@@ -39,7 +39,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    depends-on: install
+    needs: install
     steps:
       - uses: actions/checkout@v2
       - name: Build
@@ -47,7 +47,7 @@ jobs:
 
   migrate:
     runs-on: ubuntu-latest
-    depends-on: build
+    needs: build
     steps:
       - uses: actions/checkout@v2
       - name: Migrate
@@ -55,7 +55,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    depends-on: build
+    needs: build
     steps:
       - uses: actions/checkout@v2
       - name: Test
