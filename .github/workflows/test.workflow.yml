@@ -22,7 +22,7 @@ jobs:
         run: docker-compose -f docker/docker-compose.test.yml up -d
       - name: Wait for Postgres
         run: sleep 10
-        - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
@@ -31,5 +31,5 @@ jobs:
       - run: yarn install
       - run: yarn build
       - name: Migrate
-          run: npx prisma migrate deploy
+        run: npx prisma migrate deploy
       - run: yarn build
