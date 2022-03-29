@@ -22,7 +22,7 @@ jobs:
       - name: Setup Posgres
         run: docker-compose -f docker/docker-compose.test.yml up -d
 
-      - run: EXPORT DB_URL=$DATABASE_URL && echo $DB_URL
+      - run: export DB_URL=$DATABASE_URL && echo $DB_URL
 
       - uses: actions/checkout@v2
 
