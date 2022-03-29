@@ -22,9 +22,7 @@ jobs:
       - name: Setup Posgres
         run: docker-compose -f docker/docker-compose.test.yml up -d
 
-      - run: export DB_URL=$DATABASE_URL && echo $DB_URL
-
-      - uses: actions/checkout@v2
+      # - run: export DB_URL=$DATABASE_URL && echo $DB_URL
 
       - uses: actions/setup-node@v2
         with:
@@ -37,3 +35,6 @@ jobs:
 
       - name: Migrate
         run: npx prisma migrate deploy
+
+      - name: Run Tests
+        run: yarn test
