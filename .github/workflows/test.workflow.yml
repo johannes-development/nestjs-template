@@ -1,10 +1,10 @@
-name: Node.js Test Workflow
+name: giTest Workflow
 
 on:
   push:
-    branches: [main]
+    branches: ['!main']
   pull_request:
-    branches: [main]
+    branches: ['main']
 
 env:
   DATABASE_URL: postgresql://postgres:${{ secrets.SECRET_PASSWORD }}@0.0.0.0:5432/test_development
